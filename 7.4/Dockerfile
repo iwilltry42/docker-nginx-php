@@ -1,13 +1,12 @@
-# Alpine: https://hub.docker.com/_/alpine
 FROM alpine:3.12
 
 ARG BUILD_CORES
 
 # NGINX: https://nginx.org/en/download.html
-ARG NGINX_VER=1.18.0
+ARG NGINX_VER=1.19.0
 
 # PHP: https://www.php.net/downloads.php
-ARG PHP_VER=7.4.5
+ARG PHP_VER=7.4.7
 
 # https://ftp.gnu.org/pub/gnu/libiconv/
 ARG LIBICONV_VERSION=1.16
@@ -51,14 +50,13 @@ ARG PHP_CONF=" \
     --enable-fpm \
     --disable-cgi \
     --enable-mysqlnd \
+    --enable-mbstring \
     --with-curl \
     --with-libedit \
     --with-openssl \
     --with-iconv=/usr/local \
     --enable-gd \
-    --with-jpeg-dir \
     --with-freetype \
-    --with-png-dir \
     --with-jpeg \
     --with-webp-dir \
     --with-xpm-dir=no \
@@ -73,6 +71,7 @@ ARG PHP_EXT_LIST=" \
     dom \
     json \
     xml \
+    mbstring \
     posix \
     xmlwriter \
     zip \
