@@ -1,5 +1,5 @@
 # Alpine: https://hub.docker.com/_/alpine
-FROM alpine:3.11
+FROM alpine:3.12
 
 ARG BUILD_CORES
 
@@ -51,19 +51,20 @@ ARG PHP_CONF=" \
     --enable-fpm \
     --disable-cgi \
     --enable-mysqlnd \
-    --enable-mbstring \
     --with-curl \
     --with-libedit \
     --with-openssl \
     --with-iconv=/usr/local \
-    --with-gd \
+    --enable-gd \
     --with-jpeg-dir \
+    --with-freetype \
     --with-png-dir \
+    --with-jpeg \
     --with-webp-dir \
     --with-xpm-dir=no \
-    --with-freetype-dir \
     --enable-gd-native-ttf \
     --disable-gd-jis-conv \
+    --enable-bcmath \
     --with-zlib"
 
 ARG PHP_EXT_LIST=" \
@@ -72,7 +73,6 @@ ARG PHP_EXT_LIST=" \
     dom \
     json \
     xml \
-    mbstring \
     posix \
     xmlwriter \
     zip \
@@ -143,6 +143,7 @@ RUN NB_CORES=${BUILD_CORES-$(getconf _NPROCESSORS_CONF)} \
     pkgconf \
     curl-dev \
     ca-certificates \
+    oniguruma-dev \
     ${CUSTOM_BUILD_PKGS}" \
  && apk -U add \
     ${BUILD_DEPS} \
@@ -151,9 +152,11 @@ RUN NB_CORES=${BUILD_CORES-$(getconf _NPROCESSORS_CONF)} \
     curl \
     libedit \
     libxml2 \
+    oniguruma \
     openssl \
     libwebp \
     libzip \
+    sqlite-libs \
     gd \
     pcre \
     zlib \
