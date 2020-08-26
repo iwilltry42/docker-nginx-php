@@ -3,10 +3,10 @@ FROM alpine:3.12
 ARG BUILD_CORES
 
 # NGINX: https://nginx.org/en/download.html
-ARG NGINX_VER=1.19.0
+ARG NGINX_VER=1.19.2
 
 # PHP: https://www.php.net/downloads.php
-ARG PHP_VER=7.4.7
+ARG PHP_VER=7.4.9
 
 # https://ftp.gnu.org/pub/gnu/libiconv/
 ARG LIBICONV_VERSION=1.16
