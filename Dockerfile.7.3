@@ -1,17 +1,23 @@
-FROM alpine:3.7
+# Alpine: https://hub.docker.com/_/alpine
+FROM alpine:3.12
 
 ARG BUILD_CORES
 
-ARG NGINX_VER=1.13.9
-ARG PHP_VER=7.1.15
-ARG LIBICONV_VERSION=1.15
+# NGINX: https://nginx.org/en/download.html
+ARG NGINX_VER=1.19.4
+
+# PHP: https://www.php.net/downloads.php
+ARG PHP_VER=7.3.24
+
+# https://ftp.gnu.org/pub/gnu/libiconv/
+ARG LIBICONV_VERSION=1.16
 
 LABEL description="nginx + php image based on Alpine" \
-      maintainer="Wonderfall <wonderfall@targaryen.house>" \
+      maintainer="iwilltry42 <iwilltry42@gmail.com>" \
       php_version="PHP v$PHP_VER built from source" \
       nginx_version="nginx v$NGINX_VER built from source"
 
-ARG PHP_MIRROR=http://ch1.php.net
+ARG PHP_MIRROR=https://php.net
 
 ARG NGINX_CONF=" \
     --prefix=/nginx \
@@ -51,11 +57,12 @@ ARG PHP_CONF=" \
     --with-openssl \
     --with-iconv=/usr/local \
     --with-gd \
+    --enable-bcmath \
+    --with-freetype-dir \
     --with-jpeg-dir \
     --with-png-dir \
     --with-webp-dir \
     --with-xpm-dir=no \
-    --with-freetype-dir \
     --enable-gd-native-ttf \
     --disable-gd-jis-conv \
     --with-zlib"
@@ -80,7 +87,6 @@ ARG PHP_EXT_LIST=" \
     fileinfo \
     bz2 \
     intl \
-    mcrypt \
     openssl \
     ldap \
     simplexml \
@@ -94,7 +100,6 @@ ARG CUSTOM_BUILD_PKGS=" \
     freetype-dev \
     openldap-dev \
     gmp-dev \
-    libmcrypt-dev \
     icu-dev \
     postgresql-dev \
     libpng-dev \
@@ -104,7 +109,7 @@ ARG CUSTOM_BUILD_PKGS=" \
     libxpm-dev \
     libedit-dev \
     libxml2-dev \
-    libressl-dev \
+    openssl-dev \
     libbz2 \
     sqlite-dev \
     imap-dev"
@@ -113,7 +118,6 @@ ARG CUSTOM_PKGS=" \
     freetype \
     openldap \
     gmp \
-    libmcrypt \
     bzip2-dev \
     icu \
     libpq \
@@ -122,7 +126,6 @@ ARG CUSTOM_PKGS=" \
 COPY rootfs /
 
 RUN NB_CORES=${BUILD_CORES-$(getconf _NPROCESSORS_CONF)} \
-
 ### Packages installation
  && BUILD_DEPS=" \
     linux-headers \
@@ -136,6 +139,7 @@ RUN NB_CORES=${BUILD_CORES-$(getconf _NPROCESSORS_CONF)} \
     gcc \
     g++ \
     libc-dev \
+    libzip-dev \
     make \
     pkgconf \
     curl-dev \
@@ -148,13 +152,13 @@ RUN NB_CORES=${BUILD_CORES-$(getconf _NPROCESSORS_CONF)} \
     curl \
     libedit \
     libxml2 \
-    libressl \
+    openssl \
     libwebp \
+    libzip \
     gd \
     pcre \
     zlib \
     ${CUSTOM_PKGS} \
-
 ### Source downloading
  && wget http://nginx.org/download/nginx-${NGINX_VER}.tar.gz -O /tmp/nginx-${NGINX_VER}.tar.gz \
  && wget http://nginx.org/download/nginx-${NGINX_VER}.tar.gz.asc -O /tmp/nginx-${NGINX_VER}.tar.gz.asc \
@@ -166,25 +170,21 @@ RUN NB_CORES=${BUILD_CORES-$(getconf _NPROCESSORS_CONF)} \
  && tar xzf /tmp/nginx-${NGINX_VER}.tar.gz -C /usr/src \
  && tar xzvf /tmp/php-${PHP_VER}.tar.gz -C /usr/src \
  && tar xzf /tmp/libiconv-${LIBICONV_VERSION}.tar.gz -C /usr/src \
-
 ### nginx installation
  && cd /usr/src/nginx-${NGINX_VER} \
  && ./configure --with-cc-opt="-O3 -fPIE -fstack-protector-strong" ${NGINX_CONF} \
  && make -j ${NB_CORES} \
  && make install \
-
 ### GNU Libiconv installation
  && cd /usr/src/libiconv-${LIBICONV_VERSION} \
  && ./configure --prefix=/usr/local \
  && make && make install && libtool --finish /usr/local/lib \
-
 ### PHP installation
  && mv /usr/src/php-${PHP_VER} /usr/src/php \
  && cd /usr/src/php \
  && ./configure CFLAGS="-O3 -fstack-protector-strong" ${PHP_CONF} \
  && make -j ${NB_CORES} \
  && make install \
-
 ### Strip, clean, install modules
  && { find /usr/local/bin /usr/local/sbin -type f -perm +0111 -exec strip --strip-all '{}' + || true; } \
  && make clean \
