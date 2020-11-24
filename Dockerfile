@@ -125,7 +125,6 @@ ARG CUSTOM_PKGS=" \
 COPY rootfs /
 
 RUN NB_CORES=${BUILD_CORES-$(getconf _NPROCESSORS_CONF)} \
-
 ### Packages installation
  && BUILD_DEPS=" \
     linux-headers \
@@ -162,7 +161,6 @@ RUN NB_CORES=${BUILD_CORES-$(getconf _NPROCESSORS_CONF)} \
     pcre \
     zlib \
     ${CUSTOM_PKGS} \
-
 ### Source downloading
  && wget http://nginx.org/download/nginx-${NGINX_VER}.tar.gz -O /tmp/nginx-${NGINX_VER}.tar.gz \
  && wget http://nginx.org/download/nginx-${NGINX_VER}.tar.gz.asc -O /tmp/nginx-${NGINX_VER}.tar.gz.asc \
@@ -174,25 +172,21 @@ RUN NB_CORES=${BUILD_CORES-$(getconf _NPROCESSORS_CONF)} \
  && tar xzf /tmp/nginx-${NGINX_VER}.tar.gz -C /usr/src \
  && tar xzvf /tmp/php-${PHP_VER}.tar.gz -C /usr/src \
  && tar xzf /tmp/libiconv-${LIBICONV_VERSION}.tar.gz -C /usr/src \
-
 ### nginx installation
  && cd /usr/src/nginx-${NGINX_VER} \
  && ./configure --with-cc-opt="-O3 -fPIE -fstack-protector-strong" ${NGINX_CONF} \
  && make -j ${NB_CORES} \
  && make install \
-
 ### GNU Libiconv installation
  && cd /usr/src/libiconv-${LIBICONV_VERSION} \
  && ./configure --prefix=/usr/local \
  && make && make install && libtool --finish /usr/local/lib \
-
 ### PHP installation
  && mv /usr/src/php-${PHP_VER} /usr/src/php \
  && cd /usr/src/php \
  && ./configure CFLAGS="-O3 -fstack-protector-strong" ${PHP_CONF} \
  && make -j ${NB_CORES} \
  && make install \
-
 ### Strip, clean, install modules
  && { find /usr/local/bin /usr/local/sbin -type f -perm +0111 -exec strip --strip-all '{}' + || true; } \
  && make clean \
